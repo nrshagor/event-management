@@ -2,15 +2,13 @@
 require_once __DIR__ . '/../app/config.php';
 require_once __DIR__ . '/../app/controllers/EventController.php';
 
-// Ensure user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
+    redirect('login.php');
 }
 
 $eventController = new EventController();
 
-// Handle event creation
+// Handle Event Creation
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_event'])) {
     $name = htmlspecialchars($_POST['name']);
     $description = htmlspecialchars($_POST['description']);
@@ -19,82 +17,102 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_event'])) {
     $capacity = intval($_POST['capacity']);
 
     if ($eventController->createEvent($name, $description, $date, $location, $capacity)) {
-        echo "<div class='alert alert-success'>Event created successfully!</div>";
+        // Redirect to prevent form resubmission
+        header("Location: events.php?success=1");
+        exit;
     } else {
-        echo "<div class='alert alert-danger'>Error creating event.</div>";
+        echo "Error creating event.";
     }
 }
 
-// Handle event deletion
+// Handle Event Deletion
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_event'])) {
     $eventId = intval($_POST['delete_event']);
     if ($eventController->deleteEvent($eventId)) {
-        echo "<div class='alert alert-success'>Event deleted successfully!</div>";
-        header("Location: events.php");
+        // Redirect to prevent duplicate deletion
+        header("Location: events.php?deleted=1");
+        exit;
     } else {
-        echo "<div class='alert alert-danger'>Error deleting event.</div>";
+        echo "Error deleting event.";
     }
 }
 
-// Fetch all events
+// Fetch Events
 $events = $eventController->getEvents();
 ?>
+
 <?php include __DIR__ . '/../app/views/header.php'; ?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <title>Manage Events</title>
-    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
-</head>
+<!-- Success messages -->
+<?php if (isset($_GET['success'])): ?>
+    <div class="alert alert-success">Event created successfully!</div>
+<?php endif; ?>
 
-<body>
-    <div class="container mt-5">
-        <h2>Manage Your Events</h2>
+<?php if (isset($_GET['deleted'])): ?>
+    <div class="alert alert-warning">Event deleted successfully!</div>
+<?php endif; ?>
 
-        <form method="POST">
-            <input type="text" name="name" class="form-control" placeholder="Event Name" required><br>
-            <textarea name="description" class="form-control" placeholder="Event Description" required></textarea><br>
-            <input type="datetime-local" name="date" class="form-control" required><br>
-            <input type="text" name="location" class="form-control" placeholder="Location" required><br>
-            <input type="number" name="capacity" class="form-control" placeholder="Capacity" required><br>
-            <button type="submit" name="create_event" class="btn btn-primary">Create Event</button>
-        </form>
-
-        <h3 class="mt-5">Your Events</h3>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Date</th>
-                    <th>Location</th>
-                    <th>Capacity</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($events as $event): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($event['name']); ?></td>
-                        <td><?= htmlspecialchars($event['description']); ?></td>
-                        <td><?= htmlspecialchars($event['date']); ?></td>
-                        <td><?= htmlspecialchars($event['location']); ?></td>
-                        <td><?= htmlspecialchars($event['capacity']); ?></td>
-                        <td>
-                            <form method="POST">
-                                <input type="hidden" name="delete_event" value="<?= $event['id']; ?>">
-                                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-
-        <a href="dashboard.php" class="btn btn-secondary">Back to Dashboard</a>
+<h2>Manage Your Events</h2>
+<form method="POST" class="mb-4">
+    <div class="form-group">
+        <label>Event Name</label>
+        <input type="text" name="name" class="form-control" placeholder="Event Name" required>
     </div>
-</body>
+    <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" class="form-control" placeholder="Event Description" required></textarea>
+    </div>
+    <div class="form-group">
+        <label>Date</label>
+        <input type="datetime-local" name="date" class="form-control" required>
+    </div>
+    <div class="form-group">
+        <label>Location</label>
+        <input type="text" name="location" class="form-control" placeholder="Location" required>
+    </div>
+    <div class="form-group">
+        <label>Capacity</label>
+        <input type="number" name="capacity" class="form-control" placeholder="Capacity" required>
+    </div>
+    <button type="submit" name="create_event" class="btn btn-primary">Create Event</button>
+</form>
 
-</html>
+<h3>Your Events</h3>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Date</th>
+            <th>Location</th>
+            <th>Capacity</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php if (count($events) > 0): ?>
+            <?php foreach ($events as $event): ?>
+                <tr>
+                    <td><?= htmlspecialchars($event['name']) ?></td>
+                    <td><?= htmlspecialchars($event['description']) ?></td>
+                    <td><?= htmlspecialchars($event['date']) ?></td>
+                    <td><?= htmlspecialchars($event['location']) ?></td>
+                    <td><?= htmlspecialchars($event['capacity']) ?></td>
+                    <td>
+                        <a href="update_event.php?id=<?= $event['id'] ?>" class="btn btn-warning btn-sm">Edit</a>
+                        <form method="POST" class="d-inline">
+                            <input type="hidden" name="delete_event" value="<?= $event['id'] ?>">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <tr>
+                <td colspan="6" class="text-center">No events found.</td>
+            </tr>
+        <?php endif; ?>
+    </tbody>
+</table>
+
 <?php include __DIR__ . '/../app/views/footer.php'; ?>

@@ -23,6 +23,27 @@ class EventController
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // Get Event Id
+    public function getEventById($id)
+    {
+        global $pdo;
+        $stmt = $pdo->prepare("SELECT * FROM events WHERE id = ? AND created_by = ?");
+        $stmt->execute([$id, $_SESSION['user_id']]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // Update Event Id
+
+    public function updateEvent($id, $name, $description, $date, $location, $capacity)
+    {
+        global $pdo;
+
+        $stmt = $pdo->prepare("UPDATE events SET name = ?, description = ?, date = ?, location = ?, capacity = ? 
+                               WHERE id = ? AND created_by = ?");
+        return $stmt->execute([$name, $description, $date, $location, $capacity, $id, $_SESSION['user_id']]);
+    }
+
+
     // Delete an event
     public function deleteEvent($id)
     {
