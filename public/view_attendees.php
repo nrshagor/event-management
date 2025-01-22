@@ -15,6 +15,8 @@ $attendees = $attendeeController->getAttendeesByEvent($event_id);
 <?php include __DIR__ . '/../app/views/header.php'; ?>
 
 <h2>Attendees List</h2>
+<a href="export_attendees.php?event_id=<?= $event_id ?>" class="btn btn-success">Download CSV</a>
+
 <table class="table table-bordered">
     <thead>
         <tr>

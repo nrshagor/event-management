@@ -32,6 +32,56 @@ class EventController
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    public function getPaginatedEvents($limit, $offset, $sort, $search)
+    {
+        global $pdo;
+
+        // Validate sorting fields to prevent SQL injection
+        $allowedSortColumns = ['name', 'date', 'capacity'];
+        $sort = in_array($sort, $allowedSortColumns) ? $sort : 'name';
+
+        $query = "SELECT * FROM events WHERE created_by = ? ";
+        $params = [$_SESSION['user_id']];
+
+        if (!empty($search)) {
+            $query .= "AND name LIKE ? ";
+            $params[] = "%$search%";
+        }
+
+        // Append LIMIT and OFFSET directly for pagination
+        $query .= "ORDER BY $sort LIMIT $limit OFFSET $offset";
+
+        $stmt = $pdo->prepare($query);
+
+        if (!empty($search)) {
+            $stmt->execute([$params[0], $params[1]]);
+        } else {
+            $stmt->execute([$params[0]]);
+        }
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+
+    public function getTotalEventsCount($search)
+    {
+        global $pdo;
+
+        $query = "SELECT COUNT(*) FROM events WHERE created_by = ?";
+        $params = [$_SESSION['user_id']];
+
+        if (!empty($search)) {
+            $query .= " AND name LIKE ?";
+            $params[] = "%$search%";
+        }
+
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($params);
+        return $stmt->fetchColumn();
+    }
+
+
     // Update Event Id
 
     public function updateEvent($id, $name, $description, $date, $location, $capacity)
