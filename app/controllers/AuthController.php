@@ -1,49 +1,51 @@
 <?php
-require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../helpers/session.php';
 
 class AuthController
 {
-    public function register($username, $email, $password)
+    private $userModel;
+
+    public function __construct()
     {
-        global $pdo;
-
-        // Default role assigned as 'user'
-        $role = 'user';
-        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-
-        $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)");
-
-        if ($stmt->execute([$username, $email, $hashedPassword, $role])) {
-            return true;
-        }
-        return false;
+        $this->userModel = new User();
     }
 
+    public function register($username, $email, $password)
+    {
+        if ($this->userModel->register($username, $email, $password)) {
+            setFlashMessage('success', 'Registration successful. Please login.');
+            header("Location: ../public/login.php");
+            exit();
+        } else {
+            setFlashMessage('error', 'Registration failed. Try again.');
+            header("Location: ../public/register.php");
+            exit();
+        }
+    }
 
     public function login($email, $password)
     {
-        global $pdo;
-
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
-        $stmt->execute([$email]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        $user = $this->userModel->getUserByEmail($email);
 
         if ($user && password_verify($password, $user['password'])) {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
-            $_SESSION['role'] = $user['role'];  // Store role in session
-
-            return true;
+            $_SESSION['role'] = $user['role'];
+            header("Location: ../public/dashboard.php");
+            exit();
+        } else {
+            setFlashMessage('error', 'Invalid email or password.');
+            header("Location: ../public/login.php");
+            exit();
         }
-        return false;
     }
 
     public function logout()
     {
         session_start();
-        session_unset();
         session_destroy();
-        header("Location: public/login.php");
-        exit;
+        header("Location: ../public/login.php");
+        exit();
     }
 }
