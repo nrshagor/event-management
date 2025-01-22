@@ -105,6 +105,11 @@ $events = $eventController->getEvents();
                             <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                         </form>
                     </td>
+                    <td>
+                        <a href="register_attendee.php" class="btn btn-primary btn-sm">Register Attendees</a>
+                        <a href="view_attendees.php?event_id=<?= $event['id'] ?>" class="btn btn-info btn-sm">View Attendees</a>
+                    </td>
+
                 </tr>
             <?php endforeach; ?>
         <?php else: ?>
