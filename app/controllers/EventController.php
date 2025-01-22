@@ -1,105 +1,98 @@
 <?php
-require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../models/Event.php';
 
 class EventController
 {
-    // Create a new event
+    private $eventModel;
+
+    public function __construct($pdo)
+    {
+        $this->eventModel = new EventModel($pdo);
+    }
+
     public function createEvent($name, $description, $date, $location, $capacity)
     {
-        global $pdo;
+        if (empty($name) || empty($date) || empty($location) || empty($capacity)) {
+            return "All fields are required.";
+        }
 
-        $stmt = $pdo->prepare("INSERT INTO events (name, description, date, location, capacity, created_by) VALUES (?, ?, ?, ?, ?, ?)");
+        if (!isset($_SESSION['user_id'])) {
+            return "Unauthorized access.";
+        }
 
-        return $stmt->execute([$name, $description, $date, $location, $capacity, $_SESSION['user_id']]);
+        $user_id = $_SESSION['user_id'];
+        if ($this->eventModel->createEvent($name, $description, $date, $location, $capacity, $user_id)) {
+            return "Event created successfully!";
+        }
+
+        return "Failed to create event.";
     }
 
-    // Get all events for the logged-in user
     public function getEvents()
     {
-        global $pdo;
+        if (!isset($_SESSION['user_id'])) {
+            return "Unauthorized access.";
+        }
 
-        $stmt = $pdo->prepare("SELECT * FROM events WHERE created_by = ?");
-        $stmt->execute([$_SESSION['user_id']]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $user_id = $_SESSION['user_id'];
+        return $this->eventModel->getEvents($user_id);
     }
 
-    // Get Event Id
     public function getEventById($id)
     {
-        global $pdo;
-        $stmt = $pdo->prepare("SELECT * FROM events WHERE id = ? AND created_by = ?");
-        $stmt->execute([$id, $_SESSION['user_id']]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!isset($_SESSION['user_id'])) {
+            return "Unauthorized access.";
+        }
+
+        $user_id = $_SESSION['user_id'];
+        return $this->eventModel->getEventById($id, $user_id);
     }
 
     public function getPaginatedEvents($limit, $offset, $sort, $search)
     {
-        global $pdo;
-
-        // Validate sorting fields to prevent SQL injection
-        $allowedSortColumns = ['name', 'date', 'capacity'];
-        $sort = in_array($sort, $allowedSortColumns) ? $sort : 'name';
-
-        $query = "SELECT * FROM events WHERE created_by = ? ";
-        $params = [$_SESSION['user_id']];
-
-        if (!empty($search)) {
-            $query .= "AND name LIKE ? ";
-            $params[] = "%$search%";
+        if (!isset($_SESSION['user_id'])) {
+            return "Unauthorized access.";
         }
 
-        // Append LIMIT and OFFSET directly for pagination
-        $query .= "ORDER BY $sort LIMIT $limit OFFSET $offset";
-
-        $stmt = $pdo->prepare($query);
-
-        if (!empty($search)) {
-            $stmt->execute([$params[0], $params[1]]);
-        } else {
-            $stmt->execute([$params[0]]);
-        }
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $user_id = $_SESSION['user_id'];
+        return $this->eventModel->getPaginatedEvents($user_id, $limit, $offset, $sort, $search);
     }
-
-
 
     public function getTotalEventsCount($search)
     {
-        global $pdo;
-
-        $query = "SELECT COUNT(*) FROM events WHERE created_by = ?";
-        $params = [$_SESSION['user_id']];
-
-        if (!empty($search)) {
-            $query .= " AND name LIKE ?";
-            $params[] = "%$search%";
+        if (!isset($_SESSION['user_id'])) {
+            return "Unauthorized access.";
         }
 
-        $stmt = $pdo->prepare($query);
-        $stmt->execute($params);
-        return $stmt->fetchColumn();
+        $user_id = $_SESSION['user_id'];
+        return $this->eventModel->getTotalEventsCount($user_id, $search);
     }
-
-
-    // Update Event Id
 
     public function updateEvent($id, $name, $description, $date, $location, $capacity)
     {
-        global $pdo;
+        if (!isset($_SESSION['user_id'])) {
+            return "Unauthorized access.";
+        }
 
-        $stmt = $pdo->prepare("UPDATE events SET name = ?, description = ?, date = ?, location = ?, capacity = ? 
-                               WHERE id = ? AND created_by = ?");
-        return $stmt->execute([$name, $description, $date, $location, $capacity, $id, $_SESSION['user_id']]);
+        $user_id = $_SESSION['user_id'];
+        if ($this->eventModel->updateEvent($id, $name, $description, $date, $location, $capacity, $user_id)) {
+            return "Event updated successfully!";
+        }
+
+        return "Failed to update event.";
     }
 
-
-    // Delete an event
     public function deleteEvent($id)
     {
-        global $pdo;
+        if (!isset($_SESSION['user_id'])) {
+            return "Unauthorized access.";
+        }
 
-        $stmt = $pdo->prepare("DELETE FROM events WHERE id = ? AND created_by = ?");
-        return $stmt->execute([$id, $_SESSION['user_id']]);
+        $user_id = $_SESSION['user_id'];
+        if ($this->eventModel->deleteEvent($id, $user_id)) {
+            return "Event deleted successfully!";
+        }
+
+        return "Failed to delete event.";
     }
 }

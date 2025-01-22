@@ -2,23 +2,21 @@
 require_once __DIR__ . '/../app/config.php';
 require_once __DIR__ . '/../app/controllers/EventController.php';
 
+// Check authentication
 if (!isset($_SESSION['user_id'])) {
     redirect('public/login.php');
 }
 
-$eventController = new EventController();
+$eventController = new EventController($pdo);
 
 // Pagination settings
 $limit = 5;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
+
 // Sorting and filtering
 $sort = isset($_GET['sort']) ? $_GET['sort'] : 'name';
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
-
-
-
-
 
 // Get paginated events
 $events = $eventController->getPaginatedEvents($limit, $offset, $sort, $search);
@@ -27,20 +25,15 @@ $totalPages = ceil($totalEvents / $limit);
 ?>
 
 <?php include __DIR__ . '/../app/views/header.php'; ?>
-
 <div class="container mt-5">
-
     <h2>Event Dashboard</h2>
     <a href="dashboard.php" class="btn btn-secondary">Clear Search</a>
 
-    <!-- Search Form -->
     <form method="GET" class="form-inline mb-4">
         <input type="text" name="search" class="form-control mr-2" placeholder="Search events..." value="<?= htmlspecialchars($search) ?>">
         <button type="submit" class="btn btn-primary">Search</button>
     </form>
 
-
-    <!-- Sorting Options -->
     <form method="GET" class="mb-4">
         <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
         <label>Sort by:</label>
@@ -51,7 +44,6 @@ $totalPages = ceil($totalEvents / $limit);
         </select>
     </form>
 
-    <!-- Event Table -->
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -81,20 +73,15 @@ $totalPages = ceil($totalEvents / $limit);
         </tbody>
     </table>
 
-    <!-- Pagination Links -->
     <nav>
         <ul class="pagination">
             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                 <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
-                    <a class="page-link" href="?page=<?= $i ?>&sort=<?= htmlspecialchars($sort) ?>&search=<?= urlencode($search) ?>">
-                        <?= $i ?>
-                    </a>
+                    <a class="page-link" href="?page=<?= $i ?>&sort=<?= htmlspecialchars($sort) ?>&search=<?= urlencode($search) ?>"><?= $i ?></a>
                 </li>
             <?php endfor; ?>
         </ul>
     </nav>
-
 </div>
-
 
 <?php include __DIR__ . '/../app/views/footer.php'; ?>

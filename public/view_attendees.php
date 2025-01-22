@@ -7,9 +7,9 @@ if (!isset($_GET['event_id'])) {
     exit;
 }
 
-$attendeeController = new AttendeeController();
+$attendeeController = new AttendeeController($pdo);
 $event_id = intval($_GET['event_id']);
-$attendees = $attendeeController->getAttendeesByEvent($event_id);
+$attendees = $attendeeController->listAttendees($event_id);
 ?>
 
 <?php include __DIR__ . '/../app/views/header.php'; ?>
@@ -26,7 +26,7 @@ $attendees = $attendeeController->getAttendeesByEvent($event_id);
         </tr>
     </thead>
     <tbody>
-        <?php if (count($attendees) > 0): ?>
+        <?php if (is_array($attendees) && count($attendees) > 0): ?>
             <?php foreach ($attendees as $attendee): ?>
                 <tr>
                     <td><?= htmlspecialchars($attendee['user_name']) ?></td>

@@ -6,7 +6,7 @@ if (!isset($_SESSION['user_id'])) {
     redirect('public/login.php');
 }
 
-$eventController = new EventController();
+$eventController = new EventController($pdo);
 
 // Handle Event Creation
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_event'])) {

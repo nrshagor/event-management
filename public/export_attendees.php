@@ -17,8 +17,8 @@ if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'admin' && $_SESSION['ro
 }
 
 $event_id = intval($_GET['event_id']);
-$attendeeController = new AttendeeController();
-$attendees = $attendeeController->getAttendeesByEvent($event_id);
+$attendeeController = new AttendeeController($pdo);  // Pass $pdo to the constructor
+$attendees = $attendeeController->listAttendees($event_id);
 
 // Check if there are attendees for the event
 if (empty($attendees)) {

@@ -6,7 +6,8 @@ if (!isset($_SESSION['user_id'])) {
     redirect('public/login.php');
 }
 
-$eventController = new EventController();
+$eventController = new EventController($pdo);
+
 
 // Get event ID from URL
 if (!isset($_GET['id']) || empty($_GET['id'])) {

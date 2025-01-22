@@ -3,8 +3,8 @@ require_once __DIR__ . '/../app/config.php';
 require_once __DIR__ . '/../app/controllers/AttendeeController.php';
 require_once __DIR__ . '/../app/controllers/EventController.php';
 
-$attendeeController = new AttendeeController();
-$eventController = new EventController();
+$attendeeController = new AttendeeController($pdo);
+$eventController = new EventController($pdo);
 $events = $eventController->getEvents();
 
 $message = '';
