@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'];
 
     if ($auth->register($username, $email, $password)) {
-        header("Location: login.php?success=1");
+        header("Location: public/login.php?success=1");
     } else {
         echo "Registration failed.";
     }

@@ -39,8 +39,10 @@ class AttendeeController
     public function getAttendeesByEvent($event_id)
     {
         global $pdo;
+
         $stmt = $pdo->prepare("SELECT user_name, email, registered_at FROM attendees WHERE event_id = ?");
         $stmt->execute([$event_id]);
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../app/controllers/AuthController.php';
+
 $auth = new AuthController();
+$error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = htmlspecialchars($_POST['email']);
@@ -8,29 +10,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($auth->login($email, $password)) {
         header("Location: dashboard.php");
+        exit;
     } else {
-        echo "Invalid email or password.";
+        $error = "Invalid email or password.";
     }
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
+<?php include __DIR__ . '/../app/views/header.php'; ?>
 
-<head>
-    <title>Login</title>
-    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
-</head>
+<div class="container mt-5">
+    <h2>Login</h2>
 
-<body>
-    <div class="container mt-5">
-        <h2>Login</h2>
-        <form action="" method="POST">
-            <input type="email" name="email" class="form-control" placeholder="Email" required><br>
-            <input type="password" name="password" class="form-control" placeholder="Password" required><br>
-            <button type="submit" class="btn btn-primary">Login</button>
-        </form>
-    </div>
-</body>
+    <?php if ($error): ?>
+        <div class="alert alert-danger"><?= $error ?></div>
+    <?php endif; ?>
 
-</html>
+    <form method="POST">
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" class="form-control" placeholder="Enter your email" required>
+        </div>
+
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+</div>
+
+<?php include __DIR__ . '/../app/views/footer.php'; ?>

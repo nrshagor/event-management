@@ -7,14 +7,18 @@ class AuthController
     {
         global $pdo;
 
+        // Default role assigned as 'user'
+        $role = 'user';
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-        $stmt = $pdo->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
 
-        if ($stmt->execute([$username, $email, $hashedPassword])) {
+        $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)");
+
+        if ($stmt->execute([$username, $email, $hashedPassword, $role])) {
             return true;
         }
         return false;
     }
+
 
     public function login($email, $password)
     {
@@ -27,6 +31,8 @@ class AuthController
         if ($user && password_verify($password, $user['password'])) {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
+            $_SESSION['role'] = $user['role'];  // Store role in session
+
             return true;
         }
         return false;
@@ -34,7 +40,10 @@ class AuthController
 
     public function logout()
     {
+        session_start();
+        session_unset();
         session_destroy();
-        redirect('public/login.php');
+        header("Location: public/login.php");
+        exit;
     }
 }
