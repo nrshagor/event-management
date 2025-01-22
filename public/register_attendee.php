@@ -7,52 +7,122 @@ $attendeeController = new AttendeeController($pdo);
 $eventController = new EventController($pdo);
 $events = $eventController->getEvents();
 
-$message = '';
+// Check if event_id is passed in the URL
+$selected_event_id = isset($_GET['event_id']) ? intval($_GET['event_id']) : '';
+$selected_event = null;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_attendee'])) {
-    $event_id = intval($_POST['event_id']);
-    $user_name = htmlspecialchars($_POST['user_name']);
-    $email = htmlspecialchars($_POST['email']);
-
-    $message = $attendeeController->registerAttendee($event_id, $user_name, $email);
-
-    // Redirect to prevent form resubmission
-    if ($message === "Registration successful!") {
-        header("Location: register_attendee.php?success=1");
-        exit;
+if ($selected_event_id) {
+    foreach ($events as $event) {
+        if ($event['id'] == $selected_event_id) {
+            $selected_event = $event;
+            break;
+        }
     }
 }
 ?>
 
 <?php include __DIR__ . '/../app/views/header.php'; ?>
 
-<h2>Register for an Event</h2>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Register for an Event</h2>
 
-<?php if (isset($_GET['success'])): ?>
-    <div class="alert alert-success">You have successfully registered!</div>
-<?php elseif (!empty($message)): ?>
-    <div class="alert alert-warning"><?= $message ?></div>
-<?php endif; ?>
+    <!-- Display event details if event_id exists -->
+    <?php if ($selected_event): ?>
+        <div class="alert alert-info">
+            <h4>Event Details:</h4>
+            <p><strong>Name:</strong> <?= htmlspecialchars($selected_event['name']); ?></p>
+            <p><strong>Date:</strong> <?= htmlspecialchars($selected_event['date']); ?></p>
+            <p><strong>Location:</strong> <?= htmlspecialchars($selected_event['location']); ?></p>
+            <p><strong>Capacity:</strong> <?= htmlspecialchars($selected_event['capacity']); ?></p>
+        </div>
+    <?php else: ?>
+        <div class="alert alert-warning">No event selected. Please choose from the dropdown.</div>
+    <?php endif; ?>
 
-<form method="POST">
-    <div class="form-group">
-        <label>Select Event</label>
-        <select name="event_id" class="form-control" required>
-            <option value="">-- Select Event --</option>
-            <?php foreach ($events as $event): ?>
-                <option value="<?= $event['id'] ?>"><?= htmlspecialchars($event['name']) ?> (Capacity: <?= $event['capacity'] ?>)</option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-    <div class="form-group">
-        <label>Your Name</label>
-        <input type="text" name="user_name" class="form-control" required>
-    </div>
-    <div class="form-group">
-        <label>Your Email</label>
-        <input type="email" name="email" class="form-control" required>
-    </div>
-    <button type="submit" name="register_attendee" class="btn btn-success">Register</button>
-</form>
+    <form id="eventRegistrationForm" class="p-4 border rounded shadow-sm bg-light">
+        <?php if ($selected_event_id): ?>
+            <!-- Pass the event ID as a hidden field -->
+            <input type="hidden" name="event_id" value="<?= $selected_event_id ?>">
+        <?php else: ?>
+            <div class="form-group">
+                <label for="event_id">Select Event</label>
+                <select name="event_id" id="event_id" class="form-control" required>
+                    <option value="">-- Select Event --</option>
+                    <?php foreach ($events as $event): ?>
+                        <option value="<?= $event['id'] ?>">
+                            <?= htmlspecialchars($event['name']) ?> (Capacity: <?= $event['capacity'] ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        <?php endif; ?>
+
+        <div class="form-group">
+            <label for="user_name">Your Name</label>
+            <input type="text" name="user_name" id="user_name" class="form-control" placeholder="Enter your name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Your Email</label>
+            <input type="email" name="email" id="email" class="form-control" placeholder="Enter your email" required>
+        </div>
+
+        <button type="submit" class="btn btn-success btn-block">Register</button>
+    </form>
+
+    <div id="responseMessage" class="mt-3 text-center"></div>
+</div>
+
+<!-- Include jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Submit registration form via AJAX
+        $("#eventRegistrationForm").submit(function(event) {
+            event.preventDefault();
+            $.ajax({
+                url: 'ajax_register.php',
+                type: 'POST',
+                data: $(this).serialize(),
+                dataType: 'json',
+                beforeSend: function() {
+                    $("#responseMessage").html('<div class="alert alert-info">Processing...</div>');
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $("#responseMessage").html('<div class="alert alert-success">' + response.message + '</div>');
+                        $("#eventRegistrationForm")[0].reset();
+                    } else {
+                        $("#responseMessage").html('<div class="alert alert-danger">' + response.message + '</div>');
+                    }
+                },
+                error: function() {
+                    $("#responseMessage").html('<div class="alert alert-danger">Something went wrong. Please try again.</div>');
+                }
+            });
+        });
+
+        // Fetch event details dynamically when an event is selected manually
+        $("#event_id").change(function() {
+            var eventId = $(this).val();
+            if (eventId) {
+                $.get('api/event_details.php', {
+                    event_id: eventId
+                }, function(response) {
+                    if (response.success) {
+                        alert("Event Details:\n" +
+                            "Name: " + response.event.name + "\n" +
+                            "Date: " + response.event.date + "\n" +
+                            "Location: " + response.event.location + "\n" +
+                            "Capacity: " + response.event.capacity);
+                    } else {
+                        alert("Event not found!");
+                    }
+                }, 'json');
+            }
+        });
+    });
+</script>
 
 <?php include __DIR__ . '/../app/views/footer.php'; ?>

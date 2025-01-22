@@ -106,7 +106,8 @@ $events = $eventController->getEvents();
                         </form>
                     </td>
                     <td>
-                        <a href="register_attendee.php" class="btn btn-primary btn-sm">Register Attendees</a>
+                        <a href="register_attendee.php?event_id=<?= $event['id'] ?>" class="btn btn-primary btn-sm">Register Attendees</a>
+
                         <a href="view_attendees.php?event_id=<?= $event['id'] ?>" class="btn btn-info btn-sm">View Attendees</a>
                     </td>
 
