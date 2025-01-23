@@ -32,14 +32,12 @@ class AuthController
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['role'] = $user['role'];
-            header("Location: ../public/dashboard.php");
-            exit();
+            return true;
         } else {
-            setFlashMessage('error', 'Invalid email or password.');
-            header("Location: ../public/login.php");
-            exit();
+            return false;  // Ensure failure response
         }
     }
+
 
     public function logout()
     {
