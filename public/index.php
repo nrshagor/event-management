@@ -40,9 +40,15 @@ if (!is_array($events)) {
                                     <?= $attendeeCount ?> / <?= $event['capacity'] ?> Registered
                                 </div>
                             </div>
-                            <a href="<?= BASE_URL ?>public/register_attendee.php?event_id=<?= $event['id'] ?>" class="btn btn-primary btn-block">
-                                Register Now (<?= $remainingSeats ?> left)
-                            </a>
+                            <?php if ($remainingSeats > 0): ?>
+                                <a href="<?= BASE_URL ?>public/register_attendee.php?event_id=<?= $event['id'] ?>" class="btn btn-primary btn-block">
+                                    Register Now (<?= $remainingSeats ?> left)
+                                </a>
+                            <?php else: ?>
+                                <button class="btn btn-danger btn-block" disabled>
+                                    Event is fully booked
+                                </button>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
