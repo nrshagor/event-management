@@ -12,7 +12,6 @@ class AttendeeController
 
     public function registerAttendee($event_id, $user_name, $email)
     {
-        // Validate input fields
         if (empty($event_id) || empty($user_name) || empty($email)) {
             return "All fields are required.";
         }
@@ -21,7 +20,6 @@ class AttendeeController
             return "Invalid email format.";
         }
 
-        // Check event capacity
         $eventDetails = $this->attendeeModel->getEventDetails($event_id);
         if (!$eventDetails) {
             return "Event not found.";
@@ -31,12 +29,10 @@ class AttendeeController
             return "Event is fully booked.";
         }
 
-        // Check duplicate email registration
         if ($this->attendeeModel->checkIfEmailExists($event_id, $email)) {
             return "You are already registered for this event.";
         }
 
-        // Register attendee
         if ($this->attendeeModel->addAttendee($event_id, $user_name, $email)) {
             return "Registration successful!";
         }
@@ -44,13 +40,21 @@ class AttendeeController
         return "Registration failed. Please try again.";
     }
 
-    public function listAttendees($event_id)
+    public function listAttendees($event_id, $limit, $offset, $search = '')
     {
         if (empty($event_id)) {
             return "Event ID is required.";
         }
 
-        $attendees = $this->attendeeModel->getAttendeesByEvent($event_id);
-        return $attendees ?: "No attendees found for this event.";
+        return $this->attendeeModel->getAttendeesByEvent($event_id, $limit, $offset, $search);
+    }
+
+    public function countAttendees($event_id, $search = '')
+    {
+        if (empty($event_id)) {
+            return 0;
+        }
+
+        return $this->attendeeModel->getAttendeeCount($event_id, $search);
     }
 }
