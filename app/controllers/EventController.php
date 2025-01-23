@@ -28,14 +28,19 @@ class EventController
         return "Failed to create event.";
     }
 
+    // public function getEvents()
+    // {
+    //     if (!isset($_SESSION['user_id'])) {
+    //         return "Unauthorized access.";
+    //     }
+
+    //     $user_id = $_SESSION['user_id'];
+    //     return $this->eventModel->getEvents($user_id);
+    // }
     public function getEvents()
     {
-        if (!isset($_SESSION['user_id'])) {
-            return "Unauthorized access.";
-        }
-
-        $user_id = $_SESSION['user_id'];
-        return $this->eventModel->getEvents($user_id);
+        // Allow access to events even if not logged in
+        return $this->eventModel->getAllEvents();
     }
 
     public function getEventById($id)

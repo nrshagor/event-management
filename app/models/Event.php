@@ -83,4 +83,11 @@ class EventModel
         $stmt = $this->pdo->prepare("DELETE FROM events WHERE id = ? AND created_by = ?");
         return $stmt->execute([$id, $user_id]);
     }
+
+
+    public function getAllEvents()
+    {
+        $stmt = $this->pdo->query("SELECT * FROM events ORDER BY date ASC");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
