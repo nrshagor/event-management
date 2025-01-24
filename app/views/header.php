@@ -73,10 +73,15 @@
 
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="<?= BASE_URL ?>">Event Management</a>
+        <a class="navbar-brand" href="<?= BASE_URL ?>/public/index.php">Event Management</a>
+
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
+        <form class="form-inline my-2 my-lg-0" action="<?= BASE_URL ?>public/search_results.php" method="GET">
+            <input class="form-control mr-sm-2" type="search" name="search" placeholder="Search events..." aria-label="Search">
+            <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Search</button>
+        </form>
 
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">

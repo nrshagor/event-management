@@ -100,4 +100,24 @@ class EventModel
         $stmt = $this->pdo->query("SELECT * FROM events ORDER BY date ASC");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function getLatestEvents($limit = 5)
+    {
+        $limit = (int) $limit; // Ensure limit is an integer to avoid SQL errors
+
+        $query = "SELECT * FROM events ORDER BY date ASC LIMIT " . $limit;
+        $stmt = $this->pdo->query($query);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function searchEvents($keyword)
+    {
+        if (empty($keyword)) {
+            $stmt = $this->pdo->query("SELECT * FROM events ORDER BY date ASC");
+        } else {
+            $stmt = $this->pdo->prepare("SELECT * FROM events WHERE name LIKE ? OR location LIKE ? ORDER BY date ASC");
+            $stmt->execute(['%' . $keyword . '%', '%' . $keyword . '%']);
+        }
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

@@ -179,4 +179,14 @@ class EventController
 
         return "Failed to delete event.";
     }
+
+    public function getLatestEvents($limit = 5)
+    {
+        return $this->eventModel->getLatestEvents($limit);
+    }
+
+    public function searchEvents($keyword)
+    {
+        return $this->eventModel->searchEvents($keyword);
+    }
 }
