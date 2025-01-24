@@ -73,7 +73,7 @@
 
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="<?= BASE_URL ?>/public/index.php">Event Management</a>
+        <a class="navbar-brand" href="<?= BASE_URL ?>public/index.php">Event Management</a>
 
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
