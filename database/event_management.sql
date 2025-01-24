@@ -18,7 +18,7 @@ CREATE TABLE events (
     description TEXT,
     date DATETIME NOT NULL,
     location VARCHAR(100),
-    image VARCHAR(255) DEFAULT 'default-event.jpg'
+    image VARCHAR(255) DEFAULT 'default-event.jpg',
     capacity INT NOT NULL,
     created_by INT,
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
