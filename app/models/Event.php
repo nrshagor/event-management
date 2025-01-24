@@ -11,11 +11,15 @@ class EventModel
     }
 
     // Create a new event
-    public function createEvent($name, $description, $date, $location, $capacity, $user_id)
+    public function createEvent($name, $description, $date, $location, $capacity, $user_id, $image)
     {
-        $stmt = $this->pdo->prepare("INSERT INTO events (name, description, date, location, capacity, created_by) VALUES (?, ?, ?, ?, ?, ?)");
-        return $stmt->execute([$name, $description, $date, $location, $capacity, $user_id]);
+        $stmt = $this->pdo->prepare("
+            INSERT INTO events (name, description, date, location, capacity, created_by, image) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ");
+        return $stmt->execute([$name, $description, $date, $location, $capacity, $user_id, $image]);
     }
+
 
     // Get all events for a user
     public function getEvents($user_id)

@@ -29,7 +29,8 @@ $events = $eventController->getEvents();
     <div class="card shadow-lg border-0 p-4">
         <h2 class="text-center mb-4 text-primary">Manage Your Events</h2>
 
-        <form id="eventForm" class="mb-4">
+        <form id="eventForm" class="mb-4" enctype="multipart/form-data" method="POST">
+
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
@@ -65,10 +66,18 @@ $events = $eventController->getEvents();
                 </div>
             </div>
 
+            <div class="form-group">
+                <label><strong>Event Image</strong> (Optional)</label>
+                <input type="file" name="event_image" class="form-control" id="event_image">
+                <small class="text-muted">Max file size: 10MB</small>
+
+            </div>
+
             <button type="submit" class="btn btn-primary btn-lg btn-block">
                 <i class="fas fa-plus-circle"></i> Create Event
             </button>
         </form>
+
 
         <div id="responseMessage"></div>
 
@@ -156,12 +165,14 @@ $events = $eventController->getEvents();
         $("#eventForm").submit(function(e) {
             e.preventDefault();
 
-            let formData = $(this).serialize();
+            let formData = new FormData(this);
 
             $.ajax({
                 url: 'ajax_create_event.php',
                 type: 'POST',
                 data: formData,
+                contentType: false,
+                processData: false,
                 dataType: 'json',
                 beforeSend: function() {
                     $("#responseMessage").html('<div class="alert alert-info">Processing...</div>');
@@ -169,29 +180,26 @@ $events = $eventController->getEvents();
                 success: function(response) {
                     if (response.success) {
                         $("#responseMessage").html('<div class="alert alert-success">' + response.message + '</div>');
-                        $("#eventForm")[0].reset();
 
-                        // Append the new row to the table
+                        // Append new event to the table dynamically
                         $("#eventList").append(response.html);
 
-                        // Reattach delete event handler
-                        attachDeleteEvent();
+                        // Reset the form
+                        $("#eventForm")[0].reset();
 
-                        // Re-render FontAwesome icons
-                        if (typeof window.FontAwesome !== "undefined") {
-                            FontAwesome.dom.i2svg();
-                        }
+                        // Reattach delete event listeners after adding new row
+                        attachDeleteEvent();
                     } else {
                         $("#responseMessage").html('<div class="alert alert-danger">' + response.message + '</div>');
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.log(xhr.responseText); // Print error details in console
+                    console.log(xhr.responseText);
                     $("#responseMessage").html('<div class="alert alert-danger">Error: ' + xhr.status + ' - ' + error + '</div>');
                 }
             });
-
         });
+
 
         function attachDeleteEvent() {
             $(".delete-event").off("click").on("click", function() {

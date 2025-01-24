@@ -4,6 +4,23 @@ require_once __DIR__ . '/../app/controllers/EventController.php';
 
 header('Content-Type: application/json');
 
+// Validate and handle file upload
+if (isset($_FILES['event_image']) && $_FILES['event_image']['error'] == UPLOAD_ERR_OK) {
+    $maxFileSize = 5242880; // 5MB
+    $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+
+    if ($_FILES['event_image']['size'] > $maxFileSize) {
+        echo json_encode(["success" => false, "message" => "Error: File size exceeds 5MB limit."]);
+        exit;
+    }
+
+    $fileType = mime_content_type($_FILES['event_image']['tmp_name']);
+    if (!in_array($fileType, $allowedTypes)) {
+        echo json_encode(["success" => false, "message" => "Error: Only JPG, JPEG, and PNG files are allowed."]);
+        exit;
+    }
+}
+
 try {
     $eventController = new EventController($pdo);
 
@@ -13,16 +30,10 @@ try {
     $location = htmlspecialchars($_POST['location']);
     $capacity = intval($_POST['capacity']);
 
-    // Server-side date validation
-    $currentDateTime = date('Y-m-d\TH:i');
-    if ($date < $currentDateTime) {
-        echo json_encode(["success" => false, "message" => "Event date cannot be in the past."]);
-        exit;
-    }
-
     if ($eventController->createEvent($name, $description, $date, $location, $capacity)) {
         $newEventId = $pdo->lastInsertId();
 
+        // Send back the new event HTML row
         echo json_encode([
             "success" => true,
             "message" => "Event created successfully!",
@@ -48,9 +59,12 @@ try {
                             </td>
                        </tr>'
         ]);
+        exit;
     } else {
         echo json_encode(["success" => false, "message" => "Error creating event."]);
+        exit;
     }
 } catch (Exception $e) {
     echo json_encode(["success" => false, "message" => "Exception: " . $e->getMessage()]);
+    exit;
 }

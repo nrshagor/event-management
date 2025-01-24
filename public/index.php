@@ -28,6 +28,10 @@ if (!is_array($events)) {
             ?>
                 <div class="col-md-4">
                     <div class="card shadow-lg border-0 mb-4">
+                        <img src="<?= BASE_URL ?>public/uploads/<?= htmlspecialchars($event['image']) ?>"
+                            class="card-img-top"
+                            alt="<?= htmlspecialchars($event['name']) ?>"
+                            style="height: 200px; object-fit: cover;">
                         <div class="card-body">
                             <h3 class="card-title text-primary"><?= htmlspecialchars($event['name']) ?></h3>
                             <p class="card-text text-muted"><?= htmlspecialchars($event['description']) ?></p>
