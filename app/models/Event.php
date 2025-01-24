@@ -75,11 +75,17 @@ class EventModel
     }
 
     // Update an event
-    public function updateEvent($id, $name, $description, $date, $location, $capacity, $user_id)
+    public function updateEvent($id, $name, $description, $date, $location, $capacity, $user_id, $image)
     {
-        $stmt = $this->pdo->prepare("UPDATE events SET name = ?, description = ?, date = ?, location = ?, capacity = ? WHERE id = ? AND created_by = ?");
-        return $stmt->execute([$name, $description, $date, $location, $capacity, $id, $user_id]);
+        $stmt = $this->pdo->prepare("
+            UPDATE events 
+            SET name = ?, description = ?, date = ?, location = ?, capacity = ?, image = ? 
+            WHERE id = ? AND created_by = ?
+        ");
+        return $stmt->execute([$name, $description, $date, $location, $capacity, $image, $id, $user_id]);
     }
+
+
 
     // Delete an event
     public function deleteEvent($id, $user_id)

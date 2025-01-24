@@ -118,12 +118,53 @@ class EventController
         }
 
         $user_id = $_SESSION['user_id'];
-        if ($this->eventModel->updateEvent($id, $name, $description, $date, $location, $capacity, $user_id)) {
+        $event = $this->eventModel->getEventById($id, $user_id);
+        if (!$event) {
+            return "Event not found.";
+        }
+
+        $image = $event['image'];
+
+        if (isset($_FILES['event_image']) && $_FILES['event_image']['error'] == UPLOAD_ERR_OK) {
+            $uploadDir = __DIR__ . '/../../public/uploads/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            $fileType = mime_content_type($_FILES['event_image']['tmp_name']);
+            $maxFileSize = 5242880; // 5MB limit
+
+            if ($_FILES['event_image']['size'] > $maxFileSize) {
+                return "Error: File size exceeds the 5MB limit.";
+            }
+
+            if (!in_array($fileType, $allowedTypes)) {
+                return "Error: Invalid image format. Only JPG, JPEG, and PNG are allowed.";
+            }
+
+            $imageName = time() . '_' . basename($_FILES['event_image']['name']);
+            $targetFilePath = $uploadDir . $imageName;
+
+            if (move_uploaded_file($_FILES['event_image']['tmp_name'], $targetFilePath)) {
+                if (!empty($event['image']) && $event['image'] !== 'default-event.jpg') {
+                    unlink($uploadDir . $event['image']);
+                }
+                $image = $imageName;
+            } else {
+                return "Error: Failed to upload image.";
+            }
+        }
+
+        if ($this->eventModel->updateEvent($id, $name, $description, $date, $location, $capacity, $user_id, $image)) {
             return "Event updated successfully!";
         }
 
-        return "Failed to update event.";
+        return "Error updating event.";
     }
+
+
+
 
     public function deleteEvent($id)
     {
