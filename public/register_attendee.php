@@ -2,9 +2,11 @@
 require_once __DIR__ . '/../app/config.php';
 require_once __DIR__ . '/../app/controllers/AttendeeController.php';
 require_once __DIR__ . '/../app/controllers/EventController.php';
+
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'super_admin') {
     redirect('public/login.php');
 }
+
 $attendeeController = new AttendeeController($pdo);
 $eventController = new EventController($pdo);
 $events = $eventController->getEvents();
@@ -28,8 +30,15 @@ if ($selected_event_id) {
 <div class="container mt-5">
     <h2 class="text-center mb-4">Register for an Event</h2>
 
-    <!-- Display event details if event_id exists -->
     <?php if ($selected_event): ?>
+        <!-- Display the event image as a banner -->
+        <div class="event-banner text-center mb-4">
+            <img src="<?= BASE_URL ?>public/uploads/<?= $selected_event['image']; ?>"
+                alt="<?= htmlspecialchars($selected_event['name']); ?>"
+                class="img-fluid rounded shadow"
+                style="max-height: 300px; width: 100%; object-fit: cover;">
+        </div>
+
         <div class="alert alert-info">
             <h4>Event Details:</h4>
             <p><strong>Name:</strong> <?= htmlspecialchars($selected_event['name']); ?></p>
@@ -43,7 +52,6 @@ if ($selected_event_id) {
 
     <form id="eventRegistrationForm" class="p-4 border rounded shadow-sm bg-light">
         <?php if ($selected_event_id): ?>
-            <!-- Pass the event ID as a hidden field -->
             <input type="hidden" name="event_id" value="<?= $selected_event_id ?>">
         <?php else: ?>
             <div class="form-group">
@@ -80,7 +88,6 @@ if ($selected_event_id) {
 
 <script>
     $(document).ready(function() {
-        // Submit registration form via AJAX
         $("#eventRegistrationForm").submit(function(event) {
             event.preventDefault();
             $.ajax({
@@ -105,7 +112,6 @@ if ($selected_event_id) {
             });
         });
 
-        // Fetch event details dynamically when an event is selected manually
         $("#event_id").change(function() {
             var eventId = $(this).val();
             if (eventId) {
@@ -113,13 +119,10 @@ if ($selected_event_id) {
                     event_id: eventId
                 }, function(response) {
                     if (response.success) {
-                        alert("Event Details:\n" +
-                            "Name: " + response.event.name + "\n" +
-                            "Date: " + response.event.date + "\n" +
-                            "Location: " + response.event.location + "\n" +
-                            "Capacity: " + response.event.capacity);
+                        $(".event-banner").html('<img src="' + response.event.image_url +
+                            '" class="img-fluid rounded shadow" style="max-height: 300px; width: 100%; object-fit: cover;">');
                     } else {
-                        alert("Event not found!");
+                        $(".event-banner").html('<div class="alert alert-danger">Event not found!</div>');
                     }
                 }, 'json');
             }
